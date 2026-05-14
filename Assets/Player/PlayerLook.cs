@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PlayerLook : MonoBehaviour
 {
-    public float lookAmount = 2f;
+    public float lookAmount = 5f;
 
     void Start()
     {

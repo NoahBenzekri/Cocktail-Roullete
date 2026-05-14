@@ -241,10 +241,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1018823249}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f27abe2483a28ff42b459110fb3db043, type: 3}
+  m_Script: {fileID: 11500000, guid: 32a756c05715b344eb319f493665b6b3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Interactable
-  ingredient: {fileID: 11400000, guid: 99988ace81e525c4f9209618d1b25783, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
+  ingredientData: {fileID: 11400000, guid: c71c267fec722824db2a5692427ecdb4, type: 2}
+  cocktailGlass: {fileID: 0}
 --- !u!1 &1088779929
 GameObject:
   m_ObjectHideFlags: 0
@@ -607,8 +608,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b7f1667a9ccede42813ffea60b05462, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLook
-  moveSpeed: 5
-  mouseSensitivity: 2
+  lookAmount: 2
 --- !u!114 &1986660027
 MonoBehaviour:
   m_ObjectHideFlags: 0
