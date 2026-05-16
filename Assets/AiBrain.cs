@@ -1,16 +1,7 @@
 
 using UnityEngine;
 
-public class AiBrain : IPlayerBrain
+public class AiBrain 
 {
-    [SerializeField] private bool isDrinking = false;
-    public bool IsDrinking
-    {
-        get => isDrinking;
-        set => isDrinking = value;
-    }
-    public void TakeAction()
-    {
-        IsDrinking = true;
-    }
+ // blank for now will update in a week or two
 }

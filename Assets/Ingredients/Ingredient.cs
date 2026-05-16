@@ -2,12 +2,11 @@ using UnityEngine;
 
 public class Ingredient : Interactable
 {
-    public Ingredients ingredientData;
-    public CocktailClass cocktailGlass;
+    public IngredientsOBJ ingredientData;
 
     public override void Interact()
     {
-        Debug.Log("Liquid was poured!" + ingredientData.name);
+       // cocktailGlass.UpdateDrinkColor();
 
         // todo add sound 
         // todod add visual effect and animaiton of pouring 

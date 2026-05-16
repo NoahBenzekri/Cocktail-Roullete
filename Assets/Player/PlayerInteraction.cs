@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
@@ -9,72 +10,65 @@ public class PlayerInteraction : MonoBehaviour
 
     [Header("Runtime State")]
     public Interactable currentTarget;
+    public Ingredient selectedIngredient;
 
     private HumanBrain _humanBrain;
 
     private void Start()
     {
-        _humanBrain = GetComponent<HumanBrain>();
-
         if (playerCamera == null)
         {
             playerCamera = Camera.main;
         }
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
-    private void Update()
+    public void Tick()
     {
-        if (_humanBrain != null && _humanBrain.IsDrinking)
+        LookForInteractable();
+    }
+    public void TryInteract()
+    {
+        if (currentTarget == null) return;
+
+        if (currentTarget is Ingredient ingredient)
         {
+            selectedIngredient = ingredient;
             return;
         }
 
-        LookForInteractable();
-
-        if (Input.GetMouseButtonDown(0) && currentTarget != null)
+        if (currentTarget is CocktailGlass glass && selectedIngredient != null)
         {
-            currentTarget.Interact();
-
-            if (_humanBrain != null)
-            {
-                _humanBrain.TakeAction();
-            }
+            glass.AddIngredient(selectedIngredient.ingredientData);
+            selectedIngredient = null;
         }
+    }
+
+    public void SelectedIngredient(Ingredient ingredient)
+    {
+        selectedIngredient = ingredient;
+        Debug.Log("Selected ingredient: " + ingredient.ingredientData.name);
+    }
+    private void Update()
+    {
+
     }
 
     private void LookForInteractable()
     {
-        // Always project from the center of the camera view
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
         Interactable foundTarget = null;
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, interactionLayer))
         {
-            // Cache reference directly from collider
             foundTarget = hit.collider.GetComponent<Interactable>();
 
-            // Fallback if component is on a parent object
             if (foundTarget == null)
-            {
                 foundTarget = hit.collider.GetComponentInParent<Interactable>();
-            }
         }
 
-        // Target changed state logic
-        if (foundTarget != currentTarget)
-        {
-            currentTarget = foundTarget;
-
-            if (currentTarget != null)
-            {
-                Debug.Log(currentTarget.name);
-
-                // Safe pattern matching for type casting
-                if (currentTarget is Ingredient ingredient && ingredient.ingredientData != null)
-                {
-                    Debug.Log(ingredient.ingredientData.description);
-                }
-            }
-        }
+        if (foundTarget == currentTarget) return;
+        currentTarget = foundTarget;
     }
 }
