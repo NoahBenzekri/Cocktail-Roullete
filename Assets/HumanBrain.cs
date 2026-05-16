@@ -3,19 +3,43 @@ using UnityEngine;
 // Implements the interface directly as a MonoBehaviour component
 public class HumanBrain : MonoBehaviour, IPlayerBrain
 {
-    // Explicit backing field to store the property state
-    [SerializeField] private bool isDrinking = false;
+    public PlayerInteraction playerInteraction;
+    public DrinkingSystem drinkingSystem;
 
-    // Implementation of the interface property
-    public bool IsDrinking
+    private bool IsDrinking { get; set; }
+
+    private void Update()
     {
-        get => isDrinking;
-        set => isDrinking = value;
+       HandleInteraction();
+       HandleDrinking();
+    }
+    public void HandleInteraction()
+    {
+        if(IsDrinking) return; // Prevent interaction while drinking
+        
+        playerInteraction.Tick();
+
+        if (Input.GetMouseButtonDown(0)) 
+            OnInteract();
     }
 
-    // Implementation of the interface contract method
-    public void TakeAction()
+    public void HandleDrinking()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            OnDrink();
+        }
+    }
+    public void OnInteract()
+    {
+        playerInteraction.TryInteract();
+    }
+    public void OnDrink()
     {
         IsDrinking = true;
+        drinkingSystem.Drink();
+        IsDrinking = false;
+      
     }
+    
 }
