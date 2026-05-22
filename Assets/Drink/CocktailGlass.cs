@@ -4,40 +4,86 @@ using UnityEngine;
 public class CocktailGlass : Interactable
 {
     public int maxStack = 4;
- // maybe change max stack as the progressive when the game moves along 
+    public bool hasCatalyst;
     public List<IngredientsOBJ> ingredientInGlass = new List<IngredientsOBJ>();
+    public DrinkEffectType finalEffect = DrinkEffectType.None;
 
     public override void Interact()
     {
-        Debug.Log("clicked on glass !");
+        UpdateFinalEffect();
+    }
+    public bool HasIngredients()
+    {
+        return ingredientInGlass.Count > 0;
     }
     public void AddIngredient(IngredientsOBJ ingredient)
     {
         if (ingredientInGlass.Count >= maxStack)
-        {
-            Debug.Log("Glass is full!");
             return;
-        }
 
         ingredientInGlass.Add(ingredient);
-        Debug.Log("Added " + ingredient.name);
+
+        UpdateFinalEffect();
     }
 
     public void ClearGlass()
     {
         ingredientInGlass.Clear();
-        Debug.Log("Cleared the glass");
-       // UpdateDrinkColor();
-         // clear the glass
+
+        finalEffect = DrinkEffectType.None;
     }
 
-    public void UpdateDrinkColor()
+    void UpdateFinalEffect()
     {
-        // Todo Later: Update the color of the drink based on the ingredients in the glass
-        // gonna use math function for this instead of hardcoding the colors for each ingredient
-    } 
-    public bool HasIngredients()
-    {
-        return ingredientInGlass.Count > 0;
+        finalEffect = DrinkEffectType.None;
+        hasCatalyst = false;
+
+        int bestPriority = 0;
+
+        foreach (IngredientsOBJ ingredient in ingredientInGlass)
+        {
+            DrinkEffectType effect = ingredient.effectType;
+
+            if (effect == DrinkEffectType.Catalyst)
+            {
+                hasCatalyst = true;
+                continue;
+            }
+
+            int priority = GetPriority(effect);
+
+            if (priority > bestPriority)
+            {
+                bestPriority = priority;
+                finalEffect = effect;
+            }
+        }
+
+        int GetPriority(DrinkEffectType effect)
+        {
+            switch (effect)
+            {
+                case DrinkEffectType.Blackout:
+                    return 100;
+
+                case DrinkEffectType.LiquidLuck:
+                    return 50;
+
+                case DrinkEffectType.Acid:
+                    return 40;
+
+                case DrinkEffectType.FrostBite:
+                    return 30;
+
+                case DrinkEffectType.Venom:
+                    return 20;
+
+                case DrinkEffectType.Catalyst:
+                    return 0;
+
+                default:
+                    return 0;
+            }
+        }
     }
 }

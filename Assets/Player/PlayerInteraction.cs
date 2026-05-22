@@ -1,112 +1,162 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    [Header("Setup")]
+    [Header("Raycast")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactionRange = 10f;
 
-    [Header("Runtime State")]
+    [Header("Runtime")]
     public Interactable currentTarget;
+    public Ingredient selectedIngredient;
 
-    private Outline previousOutline;
+    private Outline currentOutline;
 
     private void Start()
     {
         if (playerCamera == null)
-        {
             playerCamera = Camera.main;
-        }
     }
 
     public void Tick()
     {
-        LookForInteractable();
+        FindTargetUnderMouse();
     }
 
     public void TryInteract()
     {
-        if (currentTarget != null)
+        if (currentTarget == null)
         {
-            currentTarget.Interact();
+            Debug.Log("No target.");
+            return;
         }
-    }
-    private void Update()
-    {
-        Tick();
 
-        if (Input.GetMouseButtonDown(0) && currentTarget != null)
+        if (currentTarget is Ingredient ingredient)
         {
-            TryInteract();
+            SelectIngredient(ingredient);
+            return;
         }
+
+        if (currentTarget is CocktailGlass glass)
+        {
+            AddSelectedIngredientToGlass(glass);
+            return;
+        }
+
+        currentTarget.Interact();
     }
 
-
-    private void LookForInteractable()
+    private void FindTargetUnderMouse()
     {
-        // Always project from the center of the camera view
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+
         Interactable foundTarget = null;
-        Outline currentOutline = null;
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactionRange))
         {
-            // Cache reference directly from collider
-            foundTarget = hit.collider.GetComponent<Interactable>() ?? hit.collider.GetComponentInParent<Interactable>();
+            foundTarget = hit.collider.GetComponent<Interactable>();
 
-            if (foundTarget != null)
-            {
-                currentOutline = foundTarget.GetComponent<Outline>() ?? foundTarget.GetComponentInParent<Outline>();
-
-            }
+            if (foundTarget == null)
+                foundTarget = hit.collider.GetComponentInParent<Interactable>();
         }
 
-        // Target changed state logic
-        if (foundTarget != currentTarget)
+        if (foundTarget == currentTarget)
+            return;
+
+        SetCurrentTarget(foundTarget);
+    }
+
+    private void SetCurrentTarget(Interactable newTarget)
+    {
+        ClearOutline();
+
+        currentTarget = newTarget;
+
+        if (currentTarget == null)
         {
-            currentTarget = foundTarget;
-
-            if (currentTarget != null)
-            {
-                Debug.Log(currentTarget.name);
-
-                DialogueManager.Instance.StartDialogue("This is a cocktail for " + currentTarget.name);
-
-
-                // Safe pattern matching for type casting
-                if (currentTarget is Ingredient ingredient && ingredient.ingredientData != null)
-                {
-                    Debug.Log(ingredient.ingredientData.description);
-
-                }
-            }
-            else
-            {
-                if (previousOutline != null)
-                {
-                    // Clear the UI cleanly when looking away into empty space
-                    DialogueManager.Instance.ClearDialogue();
-
-                }
-            }
-
-            if (previousOutline != currentOutline)
-            {
-                if (previousOutline != null)
-                {
-                    previousOutline.enabled = false;
-                }
-
-                if (currentOutline != null)
-                {
-                    currentOutline.enabled = true;
-                }
-
-                previousOutline = currentOutline;
-            }
-
-
+            ClearDialogue();
+            return;
         }
+
+        ShowDialogue(currentTarget);
+        ShowOutline(currentTarget);
+
+        Debug.Log("Current target: " + currentTarget.name);
+    }
+
+    private void SelectIngredient(Ingredient ingredient)
+    {
+        if (ingredient.ingredientData == null)
+        {
+            Debug.LogError("Ingredient has no ingredientData.");
+            return;
+        }
+
+        selectedIngredient = ingredient;
+
+        Debug.Log("Selected: " + ingredient.ingredientData.ingredientName);
+    }
+
+    private void AddSelectedIngredientToGlass(CocktailGlass glass)
+    {
+        if (selectedIngredient == null)
+        {
+            Debug.Log("Pick an ingredient first.");
+            return;
+        }
+
+        glass.AddIngredient(selectedIngredient.ingredientData);
+
+        Debug.Log("Added " + selectedIngredient.ingredientData.ingredientName + " to glass.");
+
+        selectedIngredient = null;
+    }
+
+    private void ShowDialogue(Interactable target)
+    {
+        if (DialogueManager.Instance == null)
+            return;
+
+        if (target is Ingredient ingredient && ingredient.ingredientData != null)
+        {
+            DialogueManager.Instance.StartDialogue(
+                ingredient.ingredientData.ingredientName + "\n" +
+                ingredient.ingredientData.description
+            );
+            return;
+        }
+
+        if (target is CocktailGlass)
+        {
+            DialogueManager.Instance.StartDialogue("Cocktail Glass");
+            return;
+        }
+
+        DialogueManager.Instance.StartDialogue(target.name);
+    }
+
+    private void ClearDialogue()
+    {
+        if (DialogueManager.Instance != null)
+            DialogueManager.Instance.ClearDialogue();
+    }
+
+    private void ShowOutline(Interactable target)
+    {
+        currentOutline = target.GetComponent<Outline>();
+
+        if (currentOutline == null)
+            currentOutline = target.GetComponentInParent<Outline>();
+
+        if (currentOutline != null)
+            currentOutline.enabled = true;
+    }
+
+    private void ClearOutline()
+    {
+        if (currentOutline != null)
+            currentOutline.enabled = false;
+
+        currentOutline = null;
     }
 }
