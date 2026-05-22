@@ -2,37 +2,22 @@ using UnityEngine;
 
 public class PlayerLook : MonoBehaviour
 {
-    [SerializeField] private float sensitivity = 100f;
-
-    [SerializeField] private float clampAngle = 40f;
-
-    private float _xRotation;
-    private float _yRotation;
+    [SerializeField] private float lookAmount = 0.5f;
 
     void Start()
     {
-        LockCursor(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
+        float mouseX = (Input.mousePosition.x / Screen.width - 0.5f ) * lookAmount;
+        float mouseY = (Input.mousePosition.y / Screen.height - 0.5f) * lookAmount;
 
 
-
-        _xRotation -= mouseY;
-        _xRotation = Mathf.Clamp(_xRotation, -clampAngle, clampAngle);
-
-        _yRotation += mouseX;
-        _yRotation = Mathf.Clamp(_yRotation, -clampAngle, clampAngle);  
-
-        transform.localRotation = Quaternion.Euler(_xRotation, _yRotation, 0f);
+        transform.localRotation = Quaternion.Euler(-mouseY, mouseX, 0f);
     }
 
-    public void LockCursor(bool isLocked)
-    {
-        Cursor.lockState = isLocked ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !isLocked;
-    }
+ 
 }

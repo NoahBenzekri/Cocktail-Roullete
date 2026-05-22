@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class DialogueManager : MonoBehaviour
 {
+    public static DialogueManager Instance;
+
     [SerializeField] private string dialogueLine;
 
     [SerializeField] private TextMeshProUGUI dialogueUI;
@@ -19,26 +21,63 @@ public class DialogueManager : MonoBehaviour
 
     [SerializeField] private AudioClip charactersAudioClip;
 
+    private Coroutine typeCoroutine;
+    private Coroutine fadeCoroutine;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     private void Start()
     {
-        StartCoroutine(FadeCanvasGroup());
-        StartCoroutine(StartDialogueRoutine());
-    }
-    private IEnumerator FadeCanvasGroup()
-    {
-        float delay = 0;
-
-        while (delay < fadeDelay)
+        if (!string.IsNullOrEmpty(dialogueLine))
         {
-            delay += Time.deltaTime;
-            dialogueCanvasGroup.alpha = Mathf.Lerp(0, 1, delay / fadeDelay);
-            yield return null;
+            StartDialogue(dialogueLine);
         }
     }
 
-    private IEnumerator StartDialogueRoutine()
+    public void StartDialogue(string dialogue)
     {
-   
+        if(typeCoroutine != null)
+            StopCoroutine(typeCoroutine);
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+
+        fadeCoroutine = StartCoroutine(FadeCanvasGroup(1f, fadeDelay));
+        typeCoroutine = StartCoroutine(StartDialogueRoutine(dialogue));
+    }
+
+    public void ClearDialogue()
+    {
+        if (typeCoroutine != null)
+            StopCoroutine(typeCoroutine);
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+
+        dialogueUI.text = "";
+        fadeCoroutine = StartCoroutine(FadeCanvasGroup(0f, fadeDelay));
+
+    } 
+
+    private IEnumerator FadeCanvasGroup(float targetAlpha, float duration)
+    {
+        float startAlpha = dialogueCanvasGroup.alpha;
+        float timeElapsed = 0;
+
+        while (timeElapsed < duration)
+        {
+            timeElapsed += Time.deltaTime;
+
+            dialogueCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, timeElapsed / duration);
+            yield return null;
+        }
+
+        dialogueCanvasGroup.alpha = targetAlpha;
+    }
+
+    private IEnumerator StartDialogueRoutine(string dialogueLine)
+    {
+        dialogueUI.text = "";
 
         foreach (char c in dialogueLine)
         {
@@ -47,7 +86,9 @@ public class DialogueManager : MonoBehaviour
             AudioSource.PlayClipAtPoint(charactersAudioClip, Camera.main.transform.position);
             yield return new WaitForSeconds(characterDelay);
         }
-
-        
     }
+
+  
+
+   
 }

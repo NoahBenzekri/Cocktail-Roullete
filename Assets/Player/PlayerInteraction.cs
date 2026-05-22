@@ -1,18 +1,16 @@
-using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Setup")]
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private LayerMask interactionLayer;
     [SerializeField] private float interactionRange = 10f;
 
     [Header("Runtime State")]
     public Interactable currentTarget;
-    public Ingredient selectedIngredient;
 
-    private HumanBrain _humanBrain;
+    private Outline previousOutline;
 
     private void Start()
     {
@@ -20,55 +18,80 @@ public class PlayerInteraction : MonoBehaviour
         {
             playerCamera = Camera.main;
         }
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
     }
 
-    public void Tick()
-    {
-        LookForInteractable();
-    }
-    public void TryInteract()
-    {
-        if (currentTarget == null) return;
-
-        if (currentTarget is Ingredient ingredient)
-        {
-            selectedIngredient = ingredient;
-            return;
-        }
-
-        if (currentTarget is CocktailGlass glass && selectedIngredient != null)
-        {
-            glass.AddIngredient(selectedIngredient.ingredientData);
-            selectedIngredient = null;
-        }
-    }
-
-    public void SelectedIngredient(Ingredient ingredient)
-    {
-        selectedIngredient = ingredient;
-        Debug.Log("Selected ingredient: " + ingredient.ingredientData.name);
-    }
     private void Update()
     {
+        LookForInteractable();
 
+        if (Input.GetMouseButtonDown(0) && currentTarget != null)
+        {
+            currentTarget.Interact();
+        }
     }
 
     private void LookForInteractable()
     {
-        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+        // Always project from the center of the camera view
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         Interactable foundTarget = null;
+        Outline currentOutline = null;
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, interactionLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionRange))
         {
-            foundTarget = hit.collider.GetComponent<Interactable>();
+            // Cache reference directly from collider
+            foundTarget = hit.collider.GetComponent<Interactable>() ?? hit.collider.GetComponentInParent<Interactable>();
 
-            if (foundTarget == null)
-                foundTarget = hit.collider.GetComponentInParent<Interactable>();
+            if (foundTarget != null)
+            {
+                currentOutline = foundTarget.GetComponent<Outline>() ?? foundTarget.GetComponentInParent<Outline>();
+
+            }
         }
 
-        if (foundTarget == currentTarget) return;
-        currentTarget = foundTarget;
+        // Target changed state logic
+        if (foundTarget != currentTarget)
+        {
+            currentTarget = foundTarget;
+
+            if (currentTarget != null)
+            {
+                Debug.Log(currentTarget.name);
+
+                DialogueManager.Instance.StartDialogue("This is a cocktail for " + currentTarget.name);
+
+
+                // Safe pattern matching for type casting
+                if (currentTarget is Ingredient ingredient && ingredient.ingredientData != null)
+                {
+                    Debug.Log(ingredient.ingredientData.description);
+
+                }
+            }
+            else
+            {
+               
+                    // Clear the UI cleanly when looking away into empty space
+                    DialogueManager.Instance.ClearDialogue();
+                
+            }
+        }
+
+        if (previousOutline != currentOutline)
+        {
+            if (previousOutline != null)
+            {
+                previousOutline.enabled = false;
+            }
+
+            if (currentOutline != null)
+            {
+                currentOutline.enabled = true;
+            }
+
+            previousOutline = currentOutline;
+        }
+
+
     }
 }
