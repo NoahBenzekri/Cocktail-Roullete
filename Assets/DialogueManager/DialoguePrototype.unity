@@ -299,6 +299,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 214616483}
   m_CullTransparentMesh: 1
+--- !u!1 &309053767
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 309053769}
+  - component: {fileID: 309053768}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &309053768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309053767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 6a28b3ec22e5dba4ca4fecdc8b9b818e, type: 2}
+--- !u!4 &309053769
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 309053767}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.23125969, y: 0.17455825, z: -4.2622232}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &361443549
 GameObject:
   m_ObjectHideFlags: 0
@@ -1647,8 +1696,8 @@ GameObject:
   - component: {fileID: 1999273703}
   - component: {fileID: 1999273702}
   - component: {fileID: 1999273701}
-  - component: {fileID: 1999273700}
   - component: {fileID: 1999273705}
+  - component: {fileID: 1999273706}
   m_Layer: 3
   m_Name: Cherry
   m_TagString: Untagged
@@ -1656,20 +1705,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1999273700
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1999273699}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: faa47cd9297964044b414be09ba3369e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CocktailClass
-  maxStack: 4
-  ingredientInGlass: []
 --- !u!65 &1999273701
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1783,6 +1818,20 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+--- !u!114 &1999273706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1999273699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32a756c05715b344eb319f493665b6b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
+  ingredientData: {fileID: 11400000, guid: eb454b3b4939e2c41b86a14d8afc227b, type: 2}
+  cocktailGlass: {fileID: 0}
 --- !u!1 &2029874183
 GameObject:
   m_ObjectHideFlags: 0
@@ -1795,8 +1844,8 @@ GameObject:
   - component: {fileID: 2029874188}
   - component: {fileID: 2029874187}
   - component: {fileID: 2029874186}
-  - component: {fileID: 2029874185}
   - component: {fileID: 2029874184}
+  - component: {fileID: 2029874190}
   m_Layer: 3
   m_Name: Poison
   m_TagString: Untagged
@@ -1822,20 +1871,6 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
---- !u!114 &2029874185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2029874183}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: faa47cd9297964044b414be09ba3369e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CocktailClass
-  maxStack: 4
-  ingredientInGlass: []
 --- !u!65 &2029874186
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1931,6 +1966,20 @@ Transform:
   - {fileID: 1674972128}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2029874190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2029874183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32a756c05715b344eb319f493665b6b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Ingredient
+  ingredientData: {fileID: 11400000, guid: eb454b3b4939e2c41b86a14d8afc227b, type: 2}
+  cocktailGlass: {fileID: 0}
 --- !u!1 &2143474640
 GameObject:
   m_ObjectHideFlags: 0
@@ -2224,3 +2273,4 @@ SceneRoots:
   - {fileID: 1370238535}
   - {fileID: 1999273704}
   - {fileID: 2029874189}
+  - {fileID: 309053769}

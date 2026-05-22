@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 // Implements the interface directly as a MonoBehaviour component
 public class HumanBrain : MonoBehaviour, IPlayerBrain
 {

@@ -20,15 +20,28 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    private void Update()
+    public void Tick()
     {
         LookForInteractable();
+    }
 
-        if (Input.GetMouseButtonDown(0) && currentTarget != null)
+    public void TryInteract()
+    {
+        if (currentTarget != null)
         {
             currentTarget.Interact();
         }
     }
+    private void Update()
+    {
+        Tick();
+
+        if (Input.GetMouseButtonDown(0) && currentTarget != null)
+        {
+            TryInteract();
+        }
+    }
+
 
     private void LookForInteractable()
     {
@@ -70,28 +83,30 @@ public class PlayerInteraction : MonoBehaviour
             }
             else
             {
-               
+                if (previousOutline != null)
+                {
                     // Clear the UI cleanly when looking away into empty space
                     DialogueManager.Instance.ClearDialogue();
-                
-            }
-        }
 
-        if (previousOutline != currentOutline)
-        {
-            if (previousOutline != null)
+                }
+            }
+
+            if (previousOutline != currentOutline)
             {
-                previousOutline.enabled = false;
+                if (previousOutline != null)
+                {
+                    previousOutline.enabled = false;
+                }
+
+                if (currentOutline != null)
+                {
+                    currentOutline.enabled = true;
+                }
+
+                previousOutline = currentOutline;
             }
 
-            if (currentOutline != null)
-            {
-                currentOutline.enabled = true;
-            }
 
-            previousOutline = currentOutline;
         }
-
-
     }
 }
