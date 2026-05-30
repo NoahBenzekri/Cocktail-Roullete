@@ -77,13 +77,16 @@ public class DialogueManager : MonoBehaviour
 
     private IEnumerator StartDialogueRoutine(string dialogueLine)
     {
+        
         dialogueUI.text = "";
 
         foreach (char c in dialogueLine)
         {
 
             dialogueUI.text += c;
-            AudioSource.PlayClipAtPoint(charactersAudioClip, Camera.main.transform.position);
+            if(charactersAudioClip != null)
+                AudioSource.PlayClipAtPoint(charactersAudioClip, Camera.main.transform.position);
+
             yield return new WaitForSeconds(characterDelay);
         }
     }
