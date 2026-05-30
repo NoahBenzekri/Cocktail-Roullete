@@ -15,8 +15,11 @@ public class PlayerLook : MonoBehaviour
         float mouseX = (Input.mousePosition.x / Screen.width - 0.5f ) * lookAmount;
         float mouseY = (Input.mousePosition.y / Screen.height - 0.5f) * lookAmount;
 
+        float clampedX = Mathf.Clamp(-mouseY, 0f, 45f);
 
-        transform.localRotation = Quaternion.Euler(-mouseY, mouseX, 0f);
+        float clampedY = Mathf.Clamp(mouseX, -15f, 15f);
+
+        transform.localRotation = Quaternion.Euler(clampedX, clampedY, 0f);
     }
 
  
