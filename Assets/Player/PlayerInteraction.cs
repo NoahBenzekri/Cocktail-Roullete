@@ -6,6 +6,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactionRange = 10f;
 
+    public TurnManager turnManager; 
     [Header("Runtime")]
     public Interactable currentTarget;
     public Ingredient selectedIngredient;
@@ -110,6 +111,9 @@ public class PlayerInteraction : MonoBehaviour
         Debug.Log("Added " + selectedIngredient.ingredientData.ingredientName + " to glass.");
 
         selectedIngredient = null;
+
+        if(turnManager != null)
+            turnManager.PlayerConfirmed();
     }
 
     private void ShowDialogue(Interactable target)
