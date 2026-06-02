@@ -30,8 +30,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _Frequency: 20
-    - _Speed: 5
-    - _Strength: 0.01
+    - _Speed: 26.97
+    - _Strength: 8.62
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

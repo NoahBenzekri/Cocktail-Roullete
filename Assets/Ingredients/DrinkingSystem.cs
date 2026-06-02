@@ -16,12 +16,17 @@ public class DrinkingSystem : MonoBehaviour
     public float drainMultiplier = 1f;
 
     public bool catalystActive = false;
-
     public System.Action OnClockExpired;
 
 
     public void Update()
-    {
+    {if (clockTime <= 0f)
+{
+    Debug.Log("CLOCK EXPIRED ON: " + gameObject.name);
+
+    clockTime = 0f;
+    OnClockExpired?.Invoke();
+}
         if (isFrozen || !IsAlive) return;
 
         if (_isReverse)
@@ -41,7 +46,7 @@ public class DrinkingSystem : MonoBehaviour
         }
     }
     public void Drink()
-    {
+    {Debug.Log("Drink() called on: " + gameObject.name);
         if (cocktailGlass == null)
         {
             Debug.LogError("No cocktail glass assigned to DrinkingSystem!");
@@ -112,7 +117,6 @@ public class DrinkingSystem : MonoBehaviour
 
             case DrinkEffectType.Acid:
                 StartCoroutine(AcidRoutine(amount));
-                // call acid effect
                 Debug.Log("Acid drain multiplier for: " + amount);
                 break;
 
@@ -123,12 +127,21 @@ public class DrinkingSystem : MonoBehaviour
                 break;
 
             case DrinkEffectType.Blackout:
-                clockTime = 0f;
-                Debug.Log("Blackout. Instant death.");
-                OnClockExpired?.Invoke();
-                break;
-        }
 
+    Debug.Log("BLACKOUT TRIGGERED ON: " + gameObject.name);
+    Debug.Log("Clock before blackout: " + clockTime);
+
+    clockTime = 0f;
+
+    Debug.Log("Invoking OnClockExpired");
+
+    OnClockExpired?.Invoke();
+
+    break;
+        }
+Debug.Log("Applying effect: " + ingredient.effectType +
+          " Amount: " + amount +
+          " On object: " + gameObject.name);
         clockTime = Mathf.Max(clockTime, 0f);
     }
     public IEnumerator FreezeRoutine(float duration)
