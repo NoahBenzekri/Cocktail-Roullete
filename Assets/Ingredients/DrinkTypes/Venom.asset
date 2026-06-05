@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
-  m_Name: FrostBite
-  m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
-  ingredientName: FrostBite
-  description: sfsdfds
+  m_Name: Venom
+  m_EditorClassIdentifier: Assembly-CSharp::Ingredients
+  ingredientName: Venom
+  description: Poison DOT
   amount: 1
-  ingredientType: 2
-  effectType: 2
-  CounterEffectType: 3
+  material: {fileID: 2100000, guid: 9ed94f81ff0ebd64d94db193bd3e3c5e, type: 2}
+  ingredientType: 1
+  effectType: 0
+  CounterEffectType: 2

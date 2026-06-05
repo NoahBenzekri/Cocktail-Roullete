@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
-  m_Name: Venom
+  m_Name: Catalyst-X
   m_EditorClassIdentifier: Assembly-CSharp::Ingredients
-  ingredientName: Venom
-  description: Venom
+  ingredientName: CatalystX
+  description: Doubles next effect
   amount: 1
-  ingredientType: 1
+  material: {fileID: 2100000, guid: 58c48f8df786ff24e9e83665b98b3b96, type: 2}
+  ingredientType: 0
   effectType: 0
-  CounterEffectType: 2
+  CounterEffectType: 1

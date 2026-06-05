@@ -8,6 +8,8 @@ public class CocktailGlass : Interactable
     public List<IngredientsOBJ> ingredientInGlass = new List<IngredientsOBJ>();
     public DrinkEffectType finalEffect = DrinkEffectType.None;
 
+    [SerializeField] private Material clearGlassMaterial;
+    public MeshRenderer drinkHolderRender;
     public override void Interact()
     {
         UpdateFinalEffect();
@@ -18,19 +20,31 @@ public class CocktailGlass : Interactable
     }
     public void AddIngredient(IngredientsOBJ ingredient)
     {
-        if (ingredientInGlass.Count >= maxStack)
+        Debug.Log($"Adding ingredient: {ingredient.name}");
+
+
+        if (ingredient.material == null)
+        {
+            Debug.LogWarning($"{ingredient.name} has no material assigned!");
             return;
+        }
 
         ingredientInGlass.Add(ingredient);
+        drinkHolderRender.material = ingredient.material;
+
+        Debug.Log($"Assigning material: {ingredient.material.name}");
+
+       
 
         UpdateFinalEffect();
     }
-
     public void ClearGlass()
     {
         ingredientInGlass.Clear();
-
         finalEffect = DrinkEffectType.None;
+        hasCatalyst = false;
+
+        drinkHolderRender.material = clearGlassMaterial;
     }
 
     void UpdateFinalEffect()

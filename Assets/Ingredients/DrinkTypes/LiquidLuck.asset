@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
-  m_Name: Catalyst
-  m_EditorClassIdentifier: Assembly-CSharp::Ingredients
-  ingredientName: CatalystX
-  description: 'this elixor grants the player 30 more seconds '
+  m_Name: LiquidLuck
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
+  ingredientName: LiquidLuck
+  description: Dumber AI
   amount: 1
-  ingredientType: 0
-  effectType: 0
-  CounterEffectType: 1
+  material: {fileID: 2100000, guid: f819579f0a6701d4db7d81bc21d8ce48, type: 2}
+  ingredientType: 3
+  effectType: 4
+  CounterEffectType: 5

@@ -39,6 +39,7 @@ public class TurnManager : MonoBehaviour
     public System.Action<int, int> OnLivesChanged;  // playerLives, aiLives
     public System.Action<bool> OnGameOver;       // true = player wins
 
+    private IngredientsOBJ aiIngredient;
 
     void Start()
     {
@@ -57,29 +58,28 @@ public class TurnManager : MonoBehaviour
         StartRound();
     }
 
-   
+
 
     void StartRound()
     {
         glass.ClearGlass();
         humanBrain.enabled = true;
 
-        // AI picks a random ingredient
         if (aiPool.Length > 0)
-            glass.AddIngredient(aiPool[Random.Range(0, aiPool.Length)]);
+            aiIngredient = aiPool[Random.Range(0, aiPool.Length)];
 
         SetPhase(TurnPhase.AddLiquid);
-        
     }
-
     public void PlayerConfirmed()
     {
         if (Phase != TurnPhase.AddLiquid) return;
 
+        if (aiIngredient != null)
+            glass.ingredientInGlass.Add(aiIngredient);
+
         humanBrain.enabled = false;
         StartCoroutine(FlipCoin());
     }
-
 
     IEnumerator FlipCoin()
     {

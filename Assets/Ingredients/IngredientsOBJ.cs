@@ -6,6 +6,7 @@ public class IngredientsOBJ: ScriptableObject
     public string ingredientName;
     public string description;
     public float amount; 
+    public Material material;
     public IngredientType ingredientType;
     public DrinkEffectType effectType;
     public DrinkEffectType CounterEffectType;

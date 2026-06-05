@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
-  m_Name: Acid
+  m_Name: FrostBite
   m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
-  ingredientName: Acid
-  description: asda
+  ingredientName: FrostBite
+  description: Freeze Clock
   amount: 1
-  ingredientType: 1
-  effectType: 3
-  CounterEffectType: 4
+  material: {fileID: 2100000, guid: e811912439bfe9742bdb6519006494f4, type: 2}
+  ingredientType: 2
+  effectType: 2
+  CounterEffectType: 3
