@@ -2,25 +2,28 @@ using UnityEngine;
 
 public class PlayerLook : MonoBehaviour
 {
-    [SerializeField] private float lookAmount = 0.5f;
+    [SerializeField] private float lookSensitivity = 0.2f;
+
+    private float pitchX = 0f;
+    private float yawY = 0f;
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
-        float mouseX = (Input.mousePosition.x / Screen.width - 0.5f ) * lookAmount;
-        float mouseY = (Input.mousePosition.y / Screen.height - 0.5f) * lookAmount;
+        float mouseX = Input.GetAxis("Mouse X") * lookSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * lookSensitivity;
 
-        float clampedX = Mathf.Clamp(-mouseY, 0f, 45f);
+        pitchX -= mouseY; // subtract so moving mouse up looks up
+        yawY += mouseX;
 
-        float clampedY = Mathf.Clamp(mouseX, -15f, 15f);
+        pitchX = Mathf.Clamp(pitchX, -45f, 45f);
+        yawY = Mathf.Clamp(yawY, -15f, 15f); // remove this if you want full horizontal rotation
 
-        transform.localRotation = Quaternion.Euler(clampedX, clampedY, 0f);
+        transform.localRotation = Quaternion.Euler(pitchX, yawY, 0f);
     }
-
- 
 }

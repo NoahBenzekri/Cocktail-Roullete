@@ -1,12 +1,13 @@
 using UnityEngine;
-
+using System.Collections;
+using DG.Tweening;
 public class PlayerInteraction : MonoBehaviour
 {
     [Header("Raycast")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactionRange = 10f;
 
-    public TurnManager turnManager; 
+    public TurnManager turnManager;
     [Header("Runtime")]
     public Interactable currentTarget;
     public Ingredient selectedIngredient;
@@ -34,22 +35,37 @@ public class PlayerInteraction : MonoBehaviour
 
         if (currentTarget is Ingredient ingredient)
         {
-            SelectIngredient(ingredient);
+            if (turnManager.Phase == TurnPhase.AddLiquid)
+                SelectIngredient(ingredient);
             return;
         }
 
         if (currentTarget is CocktailGlass glass)
         {
-            AddSelectedIngredientToGlass(glass);
+            if (turnManager.Phase == TurnPhase.AddLiquid)
+                AddSelectedIngredientToGlass(glass);
+            else if (turnManager.Phase == TurnPhase.PlayerChoice || turnManager.Phase == TurnPhase.PlayerForced)
+                turnManager.PlayerDrinks();
+            return;
+        }
+
+        if (currentTarget is Enemy)
+        {
+            if (turnManager.Phase == TurnPhase.PlayerChoice)
+                turnManager.PlayerPasses();
             return;
         }
 
         currentTarget.Interact();
     }
-
     private void FindTargetUnderMouse()
     {
-        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+        Vector2 scaledMouse = new Vector2(
+            Input.mousePosition.x / Screen.width * 440f,
+            Input.mousePosition.y / Screen.height * 360f
+        );
+
+        Ray ray = playerCamera.ScreenPointToRay(new Vector3(scaledMouse.x, scaledMouse.y, 0f));
 
         Interactable foundTarget = null;
 
@@ -69,8 +85,11 @@ public class PlayerInteraction : MonoBehaviour
 
     private void SetCurrentTarget(Interactable newTarget)
     {
-        ClearOutline();
+        // hover exit on old target
+        if (currentTarget != null && currentTarget is Ingredient oldIngredient)
+            oldIngredient.OnHoverExit();
 
+        ClearOutline();
         currentTarget = newTarget;
 
         if (currentTarget == null)
@@ -79,40 +98,73 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
+        // hover enter on new target
+        if (currentTarget is Ingredient newIngredient)
+            newIngredient.OnHoverEnter();
+
         ShowDialogue(currentTarget);
         ShowOutline(currentTarget);
-
-        Debug.Log("Current target: " + currentTarget.name);
     }
 
+    public bool isPouring = false;
     private void SelectIngredient(Ingredient ingredient)
     {
+        if (isPouring) return; // block double pours
         if (ingredient.ingredientData == null)
         {
             Debug.LogError("Ingredient has no ingredientData.");
             return;
         }
 
+        isPouring = true;
         selectedIngredient = ingredient;
+        CocktailGlass glass = FindObjectOfType<CocktailGlass>();
 
-        Debug.Log("Selected: " + ingredient.ingredientData.ingredientName);
+        ingredient.OnHoverExit();
+        turnManager.ReturnCamera();
+
+        StartCoroutine(PourAfterDelay(ingredient, glass, 1f));
     }
 
+    private IEnumerator PourAfterDelay(Ingredient ingredient, CocktailGlass glass, float delay)
+{
+    yield return new WaitForSeconds(delay);
+
+    bool completed = false;
+    ingredient.Pour(glass, () =>
+    {
+        if (completed) return;
+        completed = true;
+        isPouring = false;
+        if (glass != null)
+            AddSelectedIngredientToGlass(glass);
+    });
+
+    float timeout = 6f;
+    float timer = 0f;
+    while (!completed && timer < timeout)
+    {
+        timer += Time.deltaTime;
+        yield return null;
+    }
+
+    if (!completed)
+    {
+        completed = true;
+        Debug.LogWarning("Pour timed out — forcing completion.");
+        isPouring = false;
+        if (glass != null)
+            AddSelectedIngredientToGlass(glass);
+    }
+}
     private void AddSelectedIngredientToGlass(CocktailGlass glass)
     {
-        if (selectedIngredient == null)
-        {
-            Debug.Log("Pick an ingredient first.");
-            return;
-        }
+        if (selectedIngredient == null) return;
 
         glass.AddIngredient(selectedIngredient.ingredientData);
-
-        Debug.Log("Added " + selectedIngredient.ingredientData.ingredientName + " to glass.");
-
         selectedIngredient = null;
 
-        if(turnManager != null)
+        if (turnManager != null)
             turnManager.PlayerConfirmed();
     }
 
@@ -121,6 +173,10 @@ public class PlayerInteraction : MonoBehaviour
         if (DialogueManager.Instance == null)
             return;
 
+        if (target is Enemy enemy)
+        {
+            return;
+        }
         if (target is Ingredient ingredient && ingredient.ingredientData != null)
         {
             DialogueManager.Instance.StartDialogue(
@@ -147,6 +203,9 @@ public class PlayerInteraction : MonoBehaviour
 
     private void ShowOutline(Interactable target)
     {
+        if (target is Enemy && turnManager.Phase != TurnPhase.PlayerChoice)
+            return;
+
         currentOutline = target.GetComponent<Outline>();
 
         if (currentOutline == null)
