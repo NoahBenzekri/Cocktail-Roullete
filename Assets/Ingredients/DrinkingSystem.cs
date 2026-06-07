@@ -4,7 +4,6 @@ using System.Collections;
 
 public class DrinkingSystem : MonoBehaviour
 {
-
     public CocktailGlass cocktailGlass;
 
     public float clockTime = 90f;
@@ -14,56 +13,72 @@ public class DrinkingSystem : MonoBehaviour
     public bool _isReverse = false;
 
     public float drainMultiplier = 1f;
-
     public bool catalystActive = false;
+
+    private int venomRoundsLeft = 0;
+
     public System.Action OnClockExpired;
 
-
     public void Update()
-    {if (clockTime <= 0f)
-{
-    Debug.Log("CLOCK EXPIRED ON: " + gameObject.name);
+    {
+        if (clockTime <= 0f)
+        {
+            clockTime = 0f;
+            OnClockExpired?.Invoke();
+            return;
+        }
 
-    clockTime = 0f;
-    OnClockExpired?.Invoke();
-}
         if (isFrozen || !IsAlive) return;
 
         if (_isReverse)
-        {
             clockTime += Time.deltaTime;
-        }
         else
-        {
             clockTime -= Time.deltaTime * drainMultiplier;
-        }
 
         if (clockTime <= 0f)
         {
-            Debug.Log("Clock expired you have no time left!");
             clockTime = 0f;
             OnClockExpired?.Invoke();
         }
     }
+
     public void Drink()
-    {Debug.Log("Drink() called on: " + gameObject.name);
+    {
+        Debug.Log("Drink() called on: " + gameObject.name);
+
         if (cocktailGlass == null)
         {
             Debug.LogError("No cocktail glass assigned to DrinkingSystem!");
             return;
         }
+
         if (!cocktailGlass.HasIngredients())
         {
             Debug.Log("Glass is empty!");
             return;
         }
 
+        // tick venom before resolving new effects
+        if (venomRoundsLeft > 0)
+        {
+            venomRoundsLeft--;
+            float venomDamage = Random.value < 0.6f ? 10f : 0f; // 60% chance to hit
+            if (venomDamage > 0f)
+            {
+                clockTime -= venomDamage;
+                clockTime = Mathf.Max(clockTime, 0f);
+                Debug.Log("Venom ticked! -10 seconds. Rounds left: " + venomRoundsLeft);
+            }
+            else
+            {
+                Debug.Log("Venom missed this round. Rounds left: " + venomRoundsLeft);
+            }
+        }
+
         List<IngredientsOBJ> resolvedIngredients = GetResolvedIngredients(cocktailGlass.ingredientInGlass);
 
         foreach (IngredientsOBJ ingredient in resolvedIngredients)
-        {
             ApplyEffect(ingredient);
-        }
 
         cocktailGlass.ClearGlass();
     }
@@ -78,7 +93,6 @@ public class DrinkingSystem : MonoBehaviour
             foreach (IngredientsOBJ other in ingredients)
             {
                 if (ingredient == other) continue;
-
                 if (other.effectType == ingredient.CounterEffectType)
                 {
                     isCountered = true;
@@ -87,10 +101,9 @@ public class DrinkingSystem : MonoBehaviour
                 }
             }
             if (!isCountered)
-            {
                 resolved.Add(ingredient);
-            }
         }
+
         return resolved;
     }
 
@@ -106,78 +119,77 @@ public class DrinkingSystem : MonoBehaviour
                 break;
 
             case DrinkEffectType.Venom:
-                clockTime -= amount;
-                Debug.Log("Venom poison damage: " + amount);
+                // apply first tick immediately with 60% chance, then linger for 2 rounds
+                venomRoundsLeft = 2;
+                float firstTick = Random.value < 0.6f ? 10f : 0f;
+                if (firstTick > 0f)
+                {
+                    clockTime -= firstTick;
+                    clockTime = Mathf.Max(clockTime, 0f);
+                    Debug.Log("Venom first tick hit! -10 seconds.");
+                }
+                else
+                {
+                    Debug.Log("Venom first tick missed.");
+                }
                 break;
 
             case DrinkEffectType.FrostBite:
-                StartCoroutine(FreezeRoutine(amount));
-                Debug.Log("Frostbite freeze: " + amount);
+                // slow timer to half speed for `amount` seconds
+                StartCoroutine(FrostBiteRoutine(amount));
+                Debug.Log("Frostbite: timer slowed for " + amount + " seconds.");
                 break;
 
             case DrinkEffectType.Acid:
+                // drain twice as fast for `amount` seconds
                 StartCoroutine(AcidRoutine(amount));
-                Debug.Log("Acid drain multiplier for: " + amount);
+                Debug.Log("Acid: drain doubled for " + amount + " seconds.");
                 break;
 
             case DrinkEffectType.LiquidLuck:
-                // call liquid luck effect
-                StartCoroutine(ReverseRoutine());
-                Debug.Log("Liquid Luck activated. AI should become dumber later.");
+                // extra life
+                clockTime += 90f;
+                Debug.Log("Liquid Luck: extra life granted! Clock reset +90s.");
                 break;
 
             case DrinkEffectType.Blackout:
-
-    Debug.Log("BLACKOUT TRIGGERED ON: " + gameObject.name);
-    Debug.Log("Clock before blackout: " + clockTime);
-
-    clockTime = 0f;
-
-    Debug.Log("Invoking OnClockExpired");
-
-    OnClockExpired?.Invoke();
-
-    break;
+                Debug.Log("BLACKOUT on: " + gameObject.name);
+                clockTime = 0f;
+                OnClockExpired?.Invoke();
+                break;
         }
-Debug.Log("Applying effect: " + ingredient.effectType +
-          " Amount: " + amount +
-          " On object: " + gameObject.name);
+
+        Debug.Log("Applied: " + ingredient.effectType + " | Amount: " + amount + " | On: " + gameObject.name);
         clockTime = Mathf.Max(clockTime, 0f);
     }
-    public IEnumerator FreezeRoutine(float duration)
+
+    public IEnumerator FrostBiteRoutine(float duration)
     {
-        isFrozen = true;
-        Debug.Log("Player is frozen!");
-        yield return new WaitForSeconds(duration); // Freeze duration demo gonna have it linked to game manager to stop on next round or something 
-        isFrozen = false;
-        Debug.Log("Clock is unfrozen!");
+        drainMultiplier = 0.5f; // half speed
+        Debug.Log("FrostBite: timer slowed.");
+        yield return new WaitForSeconds(duration);
+        drainMultiplier = 1f;
+        Debug.Log("FrostBite: timer back to normal.");
     }
 
     public IEnumerator AcidRoutine(float duration)
     {
-        drainMultiplier = 2f;
-        Debug.Log("Timer drain doubled");
-
+        drainMultiplier = 2f; // twice as fast
+        Debug.Log("Acid: drain doubled.");
         yield return new WaitForSeconds(duration);
-
         drainMultiplier = 1f;
-        Debug.Log("Timer drain back to normal");
+        Debug.Log("Acid: drain back to normal.");
     }
+
     public IEnumerator ReverseRoutine()
     {
         _isReverse = true;
-        Debug.Log("Clock is reversed!");
-        yield return new WaitForSeconds(5f); // Reverse duration Demo
+        Debug.Log("Clock reversed!");
+        yield return new WaitForSeconds(5f);
         _isReverse = false;
-        Debug.Log("Clock is back to normal!");
+        Debug.Log("Clock back to normal.");
     }
 
-    public IEnumerator UltimatePenaltyRoutine()
-    {
-        clockTime = 0f;
-        Debug.Log("Ultimate penalty applied! Clock is now at 0!");
-        yield return null;
-    }
     private float ModifyAmount(float amount)
     {
         if (catalystActive)
@@ -185,10 +197,6 @@ Debug.Log("Applying effect: " + ingredient.effectType +
             catalystActive = false;
             return amount * 2f;
         }
-
         return amount;
     }
-
-
-
 }
