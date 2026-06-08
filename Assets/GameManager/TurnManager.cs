@@ -45,6 +45,9 @@ public class TurnManager : MonoBehaviour
     [Header("Lives")]
     public int lives = 3;
 
+    public BartenderAnimator bartenderAnimator;
+    public OpponentAnimator opponentAnimator;
+
     public TurnPhase Phase { get; private set; }
 
     int _playerLives;
@@ -168,10 +171,23 @@ public class TurnManager : MonoBehaviour
     {
         SetPhase(TurnPhase.CoinFlip);
 
+        if (bartenderAnimator != null)
+            bartenderAnimator.PlayCoinFlip();
+
         if (coinFlip != null)
         {
+            coinFlip.OnCoinSettled = null;
             coinFlip.OnCoinSettled = AfterFlip;
             coinFlip.Launch();
+
+            // wait for bartender animation to finish before returning camera
+            if (bartenderAnimator != null)
+            {
+                bool animDone = false;
+                bartenderAnimator.OnFlipComplete = () => animDone = true;
+                yield return new WaitUntil(() => animDone);
+            }
+
             yield break;
         }
 
@@ -181,6 +197,11 @@ public class TurnManager : MonoBehaviour
 
     void AfterFlip(bool playerFirst)
     {
+        string result = playerFirst ? "Heads.\nThe choice is yours." : "Tails.\nThey decide your fate.";
+
+        if (DialogueManager.Instance != null)
+            DialogueManager.Instance.StartDialogue(result);
+
         if (playerFirst)
             SetPhase(TurnPhase.PlayerChoice);
         else
@@ -217,13 +238,18 @@ public class TurnManager : MonoBehaviour
     {
         SetPhase(TurnPhase.Resolving);
         ReturnCamera();
-        StartCoroutine(ResolveRoutine(() => aiDrinking.Drink()));
+        StartCoroutine(ResolveRoutine(() =>
+
+        {
+            if (opponentAnimator != null) opponentAnimator.PlayDrink();
+            aiDrinking.Drink();
+        }));
     }
 
     public void AiPasses()
     {
         SetPhase(TurnPhase.PlayerForced);
-        ReturnCamera(); // move camera back so player can see the glass/enemy
+
     }
 
     IEnumerator AiForcedDrink()
@@ -231,7 +257,11 @@ public class TurnManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
         SetPhase(TurnPhase.Resolving);
         ReturnCamera();
-        StartCoroutine(ResolveRoutine(() => aiDrinking.Drink()));
+        StartCoroutine(ResolveRoutine(() =>
+        {
+            if (opponentAnimator != null) opponentAnimator.PlayDrink();
+            aiDrinking.Drink();
+        }));
     }
 
     // ── RESOLVING ────────────────────────────────────────
@@ -256,6 +286,7 @@ public class TurnManager : MonoBehaviour
         {
             _aiLives--;
             aiDrinking.clockTime = 90f;
+            if (opponentAnimator != null) opponentAnimator.PlayDeath();
         }
 
         OnLivesChanged?.Invoke(_playerLives, _aiLives);
@@ -274,7 +305,7 @@ public class TurnManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(NextRoundDelay());
+        // don't call StartRound here — ResolveRoutine handles it
     }
 
     IEnumerator NextRoundDelay()
