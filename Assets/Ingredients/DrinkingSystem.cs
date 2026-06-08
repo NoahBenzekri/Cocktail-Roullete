@@ -16,17 +16,28 @@ public class DrinkingSystem : MonoBehaviour
     public bool catalystActive = false;
 
     private int venomRoundsLeft = 0;
+    public bool hasExpired = false;
 
     public System.Action OnClockExpired;
 
     public void Update()
     {
+            Debug.Log($"[DrinkingSystem] {gameObject.name} | frozen: {isFrozen} | time: {clockTime}");
+
         if (clockTime <= 0f)
         {
             clockTime = 0f;
-            OnClockExpired?.Invoke();
+
+            if (!hasExpired)
+            {
+                hasExpired = true;
+                OnClockExpired?.Invoke();
+            }
+
             return;
         }
+
+        hasExpired = false;
 
         if (isFrozen || !IsAlive) return;
 
@@ -38,7 +49,12 @@ public class DrinkingSystem : MonoBehaviour
         if (clockTime <= 0f)
         {
             clockTime = 0f;
-            OnClockExpired?.Invoke();
+
+            if (!hasExpired)
+            {
+                hasExpired = true;
+                OnClockExpired?.Invoke();
+            }
         }
     }
 
@@ -147,15 +163,14 @@ public class DrinkingSystem : MonoBehaviour
                 break;
 
             case DrinkEffectType.LiquidLuck:
-                // extra life
-                clockTime += 90f;
+                clockTime += amount;
+                hasExpired = false;
                 Debug.Log("Liquid Luck: extra life granted! Clock reset +90s.");
                 break;
 
             case DrinkEffectType.Blackout:
                 Debug.Log("BLACKOUT on: " + gameObject.name);
-                clockTime = 0f;
-                OnClockExpired?.Invoke();
+                ExpireClock();
                 break;
         }
 
@@ -198,5 +213,16 @@ public class DrinkingSystem : MonoBehaviour
             return amount * 2f;
         }
         return amount;
+    }
+
+    private void ExpireClock()
+    {
+        clockTime = 0f;
+
+        if (!hasExpired)
+        {
+            hasExpired = true;
+            OnClockExpired?.Invoke();
+        }
     }
 }

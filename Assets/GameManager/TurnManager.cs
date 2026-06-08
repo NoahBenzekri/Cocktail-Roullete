@@ -48,6 +48,12 @@ public class TurnManager : MonoBehaviour
     public BartenderAnimator bartenderAnimator;
     public OpponentAnimator opponentAnimator;
 
+
+    [Header("Scoreboard Camera")]
+    public Vector3 scoreboardCameraPos;
+    public Vector3 scoreboardCameraRot;
+    public float scoreboardMoveTime = 1f;
+    public float scoreboardStayTime = 12f;
     public TurnPhase Phase { get; private set; }
 
     int _playerLives;
@@ -60,7 +66,7 @@ public class TurnManager : MonoBehaviour
     public int AiLives => _aiLives;
 
     public System.Action<TurnPhase> OnPhaseChanged;
-    public System.Action<int, int> OnLivesChanged;
+    public System.Action<int, int, bool> OnLivesChanged;
     public System.Action<bool> OnGameOver;
 
     // ── INIT ─────────────────────────────────────────────
@@ -72,9 +78,6 @@ public class TurnManager : MonoBehaviour
             _originCameraRot = mainCamera.rotation;
         }
 
-        _playerLives = lives;
-        _aiLives = lives;
-
         playerDrinking.isFrozen = true;
         aiDrinking.isFrozen = true;
 
@@ -83,6 +86,11 @@ public class TurnManager : MonoBehaviour
 
         SetPhase(TurnPhase.Intro);
         StartCoroutine(IntroThenStart());
+    }
+    void Awake()
+    {
+        _playerLives = lives;
+        _aiLives = lives;
     }
 
     // ── INTRO ────────────────────────────────────────────
@@ -127,11 +135,12 @@ public class TurnManager : MonoBehaviour
     // ── ROUND ────────────────────────────────────────────
     void StartRound()
     {
+        Debug.Log($"[StartRound] playerDrinking.isFrozen before: {playerDrinking.isFrozen}");
+
         // reset pour lock
         if (humanBrain?.playerInteraction != null)
             humanBrain.playerInteraction.isPouring = false;
 
-        // snap all bottles back
         foreach (Ingredient i in FindObjectsOfType<Ingredient>())
             i.ResetPose();
 
@@ -142,10 +151,14 @@ public class TurnManager : MonoBehaviour
                 glass.AddIngredient(aiPool[Random.Range(0, aiPool.Length)]);
         }
 
+        playerDrinking.isFrozen = false;
+        aiDrinking.isFrozen = false;
+        Debug.Log($"[StartRound] playerDrinking.isFrozen after: {playerDrinking.isFrozen}");
+        Debug.Log($"[StartRound] playerDrinking object: {playerDrinking.gameObject.name}");
+
         humanBrain.enabled = true;
         SetPhase(TurnPhase.AddLiquid);
     }
-
     // ── PLAYER CONFIRMED BOTTLE ───────────────────────────
     public void PlayerConfirmed()
     {
@@ -267,45 +280,58 @@ public class TurnManager : MonoBehaviour
     // ── RESOLVING ────────────────────────────────────────
     IEnumerator ResolveRoutine(System.Action drinkAction)
     {
-        yield return new WaitForSeconds(1.2f); // wait for camera
+        // freeze during resolution so time doesn't drain unfairly
+        playerDrinking.isFrozen = true;
+        aiDrinking.isFrozen = true;
+
+        yield return new WaitForSeconds(2.2f);
         drinkAction?.Invoke();
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(5f);
+        yield return StartCoroutine(ShowScoreboardRoutine());
+
         if (Phase != TurnPhase.GameOver)
-            StartRound();
+            StartRound(); // ← this will unfreeze them again
     }
 
     // ── LIVES ────────────────────────────────────────────
     void OnLifeLost(bool isPlayer)
     {
+        StartCoroutine(OnLifeLostDelayed(isPlayer));
+    }
+    IEnumerator OnLifeLostDelayed(bool isPlayer)
+    {
+        // wait for drink/death animation to finish
+        yield return new WaitForSeconds(2f); // adjust to match your longest animation
+
         if (isPlayer)
         {
             _playerLives--;
             playerDrinking.clockTime = 90f;
+            playerDrinking.hasExpired = false;
         }
         else
         {
             _aiLives--;
             aiDrinking.clockTime = 90f;
+            aiDrinking.hasExpired = false;
             if (opponentAnimator != null) opponentAnimator.PlayDeath();
         }
 
-        OnLivesChanged?.Invoke(_playerLives, _aiLives);
+        OnLivesChanged?.Invoke(_playerLives, _aiLives,true);
 
         if (_playerLives <= 0)
         {
             SetPhase(TurnPhase.GameOver);
             OnGameOver?.Invoke(false);
-            return;
+            yield break;
         }
 
         if (_aiLives <= 0)
         {
             SetPhase(TurnPhase.GameOver);
             OnGameOver?.Invoke(true);
-            return;
+            yield break;
         }
-
-        // don't call StartRound here — ResolveRoutine handles it
     }
 
     IEnumerator NextRoundDelay()
@@ -370,6 +396,29 @@ public class TurnManager : MonoBehaviour
                 StartCoroutine(PlayerForcedDialogue());
                 break;
         }
+    }
+
+    IEnumerator ShowScoreboardRoutine()
+    {
+        if (mainCamera == null) yield break;
+
+        if (playerLook != null)
+            playerLook.enabled = false;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        mainCamera.DOMove(scoreboardCameraPos, scoreboardMoveTime).SetEase(Ease.InOutSine);
+        mainCamera.DORotate(scoreboardCameraRot, scoreboardMoveTime).SetEase(Ease.InOutSine);
+
+        yield return new WaitForSeconds(scoreboardMoveTime);
+
+        // UI should already update from OnLivesChanged / timer text here
+        yield return new WaitForSeconds(scoreboardStayTime);
+
+        ReturnCamera();
+
+        yield return new WaitForSeconds(scoreboardMoveTime);
     }
 
     IEnumerator PlayerChoiceDialogue()
