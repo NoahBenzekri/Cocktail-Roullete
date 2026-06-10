@@ -98,6 +98,33 @@ public class PlayerInteraction : MonoBehaviour
         Debug.Log("Selected: " + ingredient.ingredientData.ingredientName);
     }
 
+<<<<<<< Updated upstream
+=======
+    private IEnumerator PourAfterDelay(Ingredient ingredient, CocktailGlass glass, float delay)
+{
+    yield return new WaitForSeconds(delay);
+
+    bool completed = false;
+    yield return ingredient.Pour(glass);
+
+    float timeout = 6f;
+    float timer = 0f;
+    while (!completed && timer < timeout)
+    {
+        timer += Time.deltaTime;
+        yield return null;
+    }
+
+    if (!completed)
+    {
+        completed = true;
+        Debug.LogWarning("Pour timed out — forcing completion.");
+        isPouring = false;
+        if (glass != null)
+            AddSelectedIngredientToGlass(glass);
+    }
+}
+>>>>>>> Stashed changes
     private void AddSelectedIngredientToGlass(CocktailGlass glass)
     {
         if (selectedIngredient == null)

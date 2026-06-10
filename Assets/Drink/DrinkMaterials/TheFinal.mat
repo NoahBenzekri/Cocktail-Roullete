@@ -114,7 +114,11 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+<<<<<<< Updated upstream:Assets/Drink/DrinkMaterials/TheFinal.mat
     - _Fill: 0.402
+=======
+    - _Fill: 1
+>>>>>>> Stashed changes:Assets/Drink/Liquid.mat
     - _FillAmount: 0.205
     - _GlossMapScale: 1
     - _Glossiness: 0.5

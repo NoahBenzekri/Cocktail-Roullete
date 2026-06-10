@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<<< Updated upstream:Assets/Art/WaterDrop.png.meta
-guid: 369ff02ba094302469be56cd26c18004
-========
-guid: 7a86d2343772c1444a0439a025bf04bb
->>>>>>>> Stashed changes:Assets/Art/Models/BarEnviroment/SM_AdditionalMeshes/BarrelWooden.fbm/BarrelWooden_BaseColor.png.meta
+guid: 5179ee4782ecf2344b919bda246c9c39
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
