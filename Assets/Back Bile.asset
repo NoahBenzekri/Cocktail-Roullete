@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Back Bile
   m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
   ingredientName: Back Bile
-  description: asda
+  description: Drains your timer twice as fast. Cancelled by Frostbite.
   amount: 1
   ingredientType: 1
   effectType: 3
-  CounterEffectType: 4
+  CounterEffectType: 2

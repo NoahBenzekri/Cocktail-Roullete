@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.Rendering;
 
 public class DrinkingSystem : MonoBehaviour
 {
@@ -16,17 +17,30 @@ public class DrinkingSystem : MonoBehaviour
     public bool catalystActive = false;
 
     private int venomRoundsLeft = 0;
+    public bool hasExpired = false;
+
+    public bool isPlayer = false;
+    public Volume venomVolume;
+    public float venomVolumeDuration = 0.5f;
+    private Coroutine _venomVolumeRoutine;
+
 
     public System.Action OnClockExpired;
 
     public void Update()
     {
+
         if (clockTime <= 0f)
         {
             clockTime = 0f;
-            OnClockExpired?.Invoke();
+            if (!hasExpired && !isFrozen)   // ← don't fire if frozen
+            {
+                hasExpired = true;
+                OnClockExpired?.Invoke();
+            }
             return;
         }
+        hasExpired = false;
 
         if (isFrozen || !IsAlive) return;
 
@@ -38,7 +52,12 @@ public class DrinkingSystem : MonoBehaviour
         if (clockTime <= 0f)
         {
             clockTime = 0f;
-            OnClockExpired?.Invoke();
+
+            if (!hasExpired)
+            {
+                hasExpired = true;
+                OnClockExpired?.Invoke();
+            }
         }
     }
 
@@ -75,10 +94,14 @@ public class DrinkingSystem : MonoBehaviour
             }
         }
 
-        List<IngredientsOBJ> resolvedIngredients = GetResolvedIngredients(cocktailGlass.ingredientInGlass);
+        if (cocktailGlass.hasCatalyst)
+        {
+            catalystActive = true;
+            Debug.Log("Catalyst armed from glass.");
+        }
 
-        foreach (IngredientsOBJ ingredient in resolvedIngredients)
-            ApplyEffect(ingredient);
+        if (cocktailGlass.finalIngredient != null)
+            ApplyEffect(cocktailGlass.finalIngredient);
 
         cocktailGlass.ClearGlass();
     }
@@ -119,7 +142,6 @@ public class DrinkingSystem : MonoBehaviour
                 break;
 
             case DrinkEffectType.Venom:
-                // apply first tick immediately with 60% chance, then linger for 2 rounds
                 venomRoundsLeft = 2;
                 float firstTick = Random.value < 0.6f ? 10f : 0f;
                 if (firstTick > 0f)
@@ -131,6 +153,13 @@ public class DrinkingSystem : MonoBehaviour
                 else
                 {
                     Debug.Log("Venom first tick missed.");
+                }
+
+                if (isPlayer && venomVolume != null)
+                {
+                    if (_venomVolumeRoutine != null)
+                        StopCoroutine(_venomVolumeRoutine);
+                    _venomVolumeRoutine = StartCoroutine(VenomVolumeRoutine());
                 }
                 break;
 
@@ -147,15 +176,14 @@ public class DrinkingSystem : MonoBehaviour
                 break;
 
             case DrinkEffectType.LiquidLuck:
-                // extra life
-                clockTime += 90f;
+                clockTime += amount;
+                hasExpired = false;
                 Debug.Log("Liquid Luck: extra life granted! Clock reset +90s.");
                 break;
 
             case DrinkEffectType.Blackout:
                 Debug.Log("BLACKOUT on: " + gameObject.name);
-                clockTime = 0f;
-                OnClockExpired?.Invoke();
+                ExpireClock();
                 break;
         }
 
@@ -198,5 +226,23 @@ public class DrinkingSystem : MonoBehaviour
             return amount * 2f;
         }
         return amount;
+    }
+
+    private void ExpireClock()
+    {
+        clockTime = 0f;
+
+        if (!hasExpired)
+        {
+            hasExpired = true;
+            OnClockExpired?.Invoke();
+        }
+    }
+
+    public IEnumerator VenomVolumeRoutine()
+    {
+        venomVolume.weight = 1f;
+        yield return new WaitForSeconds(venomVolumeDuration);
+        venomVolume.weight = 0f;
     }
 }

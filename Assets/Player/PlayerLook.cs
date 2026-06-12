@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class PlayerLook : MonoBehaviour
 {
@@ -25,5 +26,6 @@ public class PlayerLook : MonoBehaviour
         yawY = Mathf.Clamp(yawY, -15f, 15f); // remove this if you want full horizontal rotation
 
         transform.localRotation = Quaternion.Euler(pitchX, yawY, 0f);
+
     }
 }

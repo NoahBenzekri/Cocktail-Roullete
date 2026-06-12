@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
   m_Name: Venom
   m_EditorClassIdentifier: Assembly-CSharp::Ingredients
-  ingredientName: Venom
-  description: Venom
+  ingredientName: Hallowed Veil
+  description: Poisons you for two rounds, chipping away your time. Cancelled by
+    Liquid Luck.
   amount: 1
   ingredientType: 1
-  effectType: 0
-  CounterEffectType: 2
+  effectType: 1
+  CounterEffectType: 0
