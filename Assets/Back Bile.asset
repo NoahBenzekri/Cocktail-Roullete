@@ -18,3 +18,4 @@ MonoBehaviour:
   ingredientType: 1
   effectType: 3
   CounterEffectType: 2
+  liquidColor: {r: 0, g: 1, b: 0.007030964, a: 1}

@@ -9,6 +9,10 @@ public class IngredientsOBJ: ScriptableObject
     public IngredientType ingredientType;
     public DrinkEffectType effectType;
     public DrinkEffectType CounterEffectType;
+
+    [Header("Visual")]
+    public Renderer liquidRenderer;   // the renderer on the bottle/ingredient mesh
+    public Color liquidColor = Color.white; // fallback if renderer has no property block
 }
 
 public enum IngredientType
