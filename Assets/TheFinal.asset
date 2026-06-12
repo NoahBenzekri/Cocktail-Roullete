@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
-  m_Name: Catalyst
-  m_EditorClassIdentifier: Assembly-CSharp::Ingredients
-  ingredientName: CatalystX
-  description: 'this elixor grants the player 30 more seconds '
+  m_Name: TheFinal
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
+  ingredientName: The Final
+  description: Instant death
   amount: 1
-  ingredientType: 0
-  effectType: 0
-  CounterEffectType: 1
+  ingredientType: 5
+  effectType: 5
+  CounterEffectType: 6

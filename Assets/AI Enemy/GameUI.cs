@@ -66,9 +66,15 @@ public class GameUI : MonoBehaviour
         return $"{minutes:00}:{remainingSeconds:00}";
     }
 
-    void UpdateLives(int playerLives, int aiLives, bool isDeath)
+   void UpdateLives(int playerLives, int aiLives, bool isDeath)
     {
-        StartCoroutine(UpdateLivesDelayed(playerLives, aiLives, isDeath));
+        for (int i = 0; i < playerHearts.Length; i++)
+            if (playerHearts[i] != null)
+                playerHearts[i].gameObject.SetActive(i < playerLives);
+
+        for (int i = 0; i < aiHearts.Length; i++)
+            if (aiHearts[i] != null)
+                aiHearts[i].gameObject.SetActive(i < aiLives);
     }
     IEnumerator UpdateLivesDelayed(int playerLives, int aiLives, bool isDeath)
     {

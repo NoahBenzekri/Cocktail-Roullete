@@ -7,6 +7,7 @@ public class CocktailGlass : Interactable
     public bool hasCatalyst;
     public List<IngredientsOBJ> ingredientInGlass = new List<IngredientsOBJ>();
     public DrinkEffectType finalEffect = DrinkEffectType.None;
+    public IngredientsOBJ finalIngredient;
 
     public override void Interact()
     {
@@ -31,11 +32,13 @@ public class CocktailGlass : Interactable
         ingredientInGlass.Clear();
 
         finalEffect = DrinkEffectType.None;
+        finalIngredient = null;
     }
 
-    void UpdateFinalEffect()
+  void UpdateFinalEffect()
     {
         finalEffect = DrinkEffectType.None;
+        finalIngredient = null;
         hasCatalyst = false;
 
         int bestPriority = 0;
@@ -50,12 +53,27 @@ public class CocktailGlass : Interactable
                 continue;
             }
 
+            // skip if another ingredient counters this one
+            bool countered = false;
+            foreach (IngredientsOBJ other in ingredientInGlass)
+            {
+                if (other == ingredient) continue;
+                if (other.effectType == ingredient.CounterEffectType)
+                {
+                    countered = true;
+                    Debug.Log(ingredient.name + " countered by " + other.name);
+                    break;
+                }
+            }
+            if (countered) continue;
+
             int priority = GetPriority(effect);
 
             if (priority > bestPriority)
             {
                 bestPriority = priority;
                 finalEffect = effect;
+                finalIngredient = ingredient;
             }
         }
 
@@ -63,26 +81,13 @@ public class CocktailGlass : Interactable
         {
             switch (effect)
             {
-                case DrinkEffectType.Blackout:
-                    return 100;
-
-                case DrinkEffectType.LiquidLuck:
-                    return 50;
-
-                case DrinkEffectType.Acid:
-                    return 40;
-
-                case DrinkEffectType.FrostBite:
-                    return 30;
-
-                case DrinkEffectType.Venom:
-                    return 20;
-
-                case DrinkEffectType.Catalyst:
-                    return 0;
-
-                default:
-                    return 0;
+                case DrinkEffectType.Blackout:   return 100;
+                case DrinkEffectType.LiquidLuck: return 50;
+                case DrinkEffectType.Acid:       return 40;
+                case DrinkEffectType.FrostBite:  return 30;
+                case DrinkEffectType.Venom:      return 20;
+                case DrinkEffectType.Catalyst:   return 0;
+                default:                         return 0;
             }
         }
     }

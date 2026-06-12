@@ -121,42 +121,42 @@ public class PlayerInteraction : MonoBehaviour
         CocktailGlass glass = FindObjectOfType<CocktailGlass>();
 
         ingredient.OnHoverExit();
-        turnManager.ReturnCamera();
+        turnManager.ReturnCamera(restoreLook: false);
 
         StartCoroutine(PourAfterDelay(ingredient, glass, 1f));
     }
 
     private IEnumerator PourAfterDelay(Ingredient ingredient, CocktailGlass glass, float delay)
-{
-    yield return new WaitForSeconds(delay);
-
-    bool completed = false;
-    ingredient.Pour(glass, () =>
     {
-        if (completed) return;
-        completed = true;
-        isPouring = false;
-        if (glass != null)
-            AddSelectedIngredientToGlass(glass);
-    });
+        yield return new WaitForSeconds(delay);
 
-    float timeout = 6f;
-    float timer = 0f;
-    while (!completed && timer < timeout)
-    {
-        timer += Time.deltaTime;
-        yield return null;
+        bool completed = false;
+        ingredient.Pour(glass, () =>
+        {
+            if (completed) return;
+            completed = true;
+            isPouring = false;
+            if (glass != null)
+                AddSelectedIngredientToGlass(glass);
+        });
+
+        float timeout = 6f;
+        float timer = 0f;
+        while (!completed && timer < timeout)
+        {
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!completed)
+        {
+            completed = true;
+            Debug.LogWarning("Pour timed out — forcing completion.");
+            isPouring = false;
+            if (glass != null)
+                AddSelectedIngredientToGlass(glass);
+        }
     }
-
-    if (!completed)
-    {
-        completed = true;
-        Debug.LogWarning("Pour timed out — forcing completion.");
-        isPouring = false;
-        if (glass != null)
-            AddSelectedIngredientToGlass(glass);
-    }
-}
     private void AddSelectedIngredientToGlass(CocktailGlass glass)
     {
         if (selectedIngredient == null) return;
@@ -188,7 +188,10 @@ public class PlayerInteraction : MonoBehaviour
 
         if (target is CocktailGlass)
         {
-            DialogueManager.Instance.StartDialogue("Cocktail Glass");
+            if (turnManager.Phase == TurnPhase.PlayerChoice || turnManager.Phase == TurnPhase.PlayerForced)
+                DialogueManager.Instance.StartDialogue("Cocktail Glass.");
+            else
+                DialogueManager.Instance.ClearDialogue();
             return;
         }
 
@@ -206,6 +209,10 @@ public class PlayerInteraction : MonoBehaviour
         if (target is Enemy && turnManager.Phase != TurnPhase.PlayerChoice)
             return;
 
+        if (target is CocktailGlass &&
+            turnManager.Phase != TurnPhase.PlayerChoice &&
+            turnManager.Phase != TurnPhase.PlayerForced)
+            return;
         currentOutline = target.GetComponent<Outline>();
 
         if (currentOutline == null)

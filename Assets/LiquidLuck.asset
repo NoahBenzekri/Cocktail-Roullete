@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebe0a6a3eec8b0c40a6d42cf25fc8de3, type: 3}
   m_Name: LiquidLuck
   m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
-  ingredientName: LiquidLuck
-  description: adsa
+  ingredientName: Twin Eyed
+  description: Adds time to your clock. Cancelled by Venom.
   amount: 1
   ingredientType: 3
   effectType: 4

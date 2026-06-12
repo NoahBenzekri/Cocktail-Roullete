@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FrostBite
   m_EditorClassIdentifier: Assembly-CSharp::IngredientsOBJ
   ingredientName: FrostBite
-  description: sfsdfds
+  description: Slows your timer for a while. Cancelled by Acid.
   amount: 1
   ingredientType: 2
   effectType: 2

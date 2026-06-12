@@ -1,45 +1,31 @@
-using System.Collections;
 using UnityEngine;
-
-public class OpponentAnimator : MonoBehaviour
+using System.Collections;
+public class PlayerAnimator : MonoBehaviour
 {
     public Animator animator;
-
-    [Header("State Names")]
-    public string drinkState = "Opponent_character_rig|Drink";
+    public string drinkState = "Opponent_character_rig|Player_EndDrink";
 
     private void Awake()
     {
-        if (animator == null)
-            animator = GetComponentInChildren<Animator>();
-        if (animator == null)
-            Debug.LogError("[OpponentAnimator] No Animator found!", this);
+        if (animator == null) animator = GetComponent<Animator>();
     }
-  public void ReturnToIdle()
-    {
-        if (animator == null) return;
-        animator.Play("Opponent_character_rig|Idle", 0, 0f);
-    }
-    public void ResetTriggers()
-    {
-        if (animator == null) return;
-        animator.ResetTrigger("Die");
-        animator.ResetTrigger("Drink");
-    }
-
+public void ResetTriggers()
+{
+    if (animator == null) return;
+    animator.ResetTrigger("Die");
+    animator.ResetTrigger("Drink");
+}
     public void PlayDrink()
     {
-        if (animator == null) return;
+        animator.SetFloat("DrinkDir", 1f);
         animator.SetTrigger("Drink");
     }
 
     public void PlayDeath()
     {
-        if (animator == null) return;
         animator.SetTrigger("Die");
     }
-
-    public IEnumerator WaitForDrinkThenDie()
+     public IEnumerator WaitForDrinkThenDie()
     {
         if (animator == null) yield break;
 
